@@ -1,205 +1,241 @@
 body {
-    font-family: 'Playfair Display', 'Segoe UI', Tahoma, Geneva, Verdana, serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font stack */
     margin: 0;
-    padding: 40px;
-    background-color: #f5f3f0;
-    color: #2e2e2e;
+    padding: 20px; /* Add padding to body instead of margin */
+    background-color: #f8f9fa; /* Lighter background */
+    color: #343a40; /* Darker text for better contrast */
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: center; /* Center content */
 }
 
-.container {
+/* Header Controls Styling */
+#headerControls {
+    width: 100%;
+    display: flex;
+    justify-content: space-between; /* Puts title and switcher on opposite ends */
+    align-items: center; /* Vertically align items in the middle */
+    margin-bottom: 20px; /* Space below the header area */
+}
+
+/* Language Switcher Styling - adjusted for flex layout within headerControls */
+#languageSwitcherContainer {
+    /* display: flex; // Not needed if label and select are simple inline-block or default */
+    /* justify-content: flex-end; // Handled by headerControls */
+    /* padding: 10px 20px; // Remove or adjust as it's part of headerControls now */
+    /* position: absolute; // No longer absolute */
+    /* top: 10px; */
+    /* right: 10px; */
+    align-items: center; /* Align label and select if they become flex items */
+}
+
+#languageSwitcherContainer label {
+    margin-right: 8px; /* Space between label and select */
+    font-size: 0.9em;
+    color: #495057;
+}
+
+#languageSwitcher {
+    padding: 6px 8px; /* Slightly smaller padding than filter inputs */
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    background-color: #fff;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.container { /* Add a wrapper for main content */
     width: 90%;
-    max-width: 1200px;
+    max-width: 1200px; /* Max width for content area */
 }
 
 h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.8em;
-    color: #3a2e2a;
-    text-align: center;
-    margin-bottom: 40px;
-    letter-spacing: 1px;
+    color: #2c3e50; /* A deeper, more sophisticated color */
+    text-align: left; /* Align to left, headerControls will position it */
+    margin-bottom: 30px; /* More space below heading - will be overridden for h1 in headerControls */
 }
 
-#searchControls {
+/* Ensure h1 within headerControls doesn't take all space if title is long */
+#headerControls h1 {
+    margin-bottom: 0; /* Remove bottom margin if it was set on generic h1 */
+    flex-grow: 1; /* Allow title to take available space if needed */
+}
+
+#searchControls { /* Wrapper for input and button */
     display: flex;
     justify-content: center;
-    margin-bottom: 35px;
+    margin-bottom: 30px;
 }
 
 #searchInput {
-    padding: 14px 20px;
+    padding: 12px 15px; /* Slightly larger padding */
     margin-right: 10px;
-    border: 1px solid #d0cfcf;
-    border-radius: 30px;
-    width: 360px;
+    border: 1px solid #ced4da; /* Softer border color */
+    border-radius: 5px;
+    width: 350px; /* Slightly wider */
     font-size: 1em;
-    background-color: #ffffff;
-    transition: box-shadow 0.3s ease;
-}
-
-#searchInput:focus {
-    box-shadow: 0 0 0 3px rgba(62, 50, 46, 0.1);
-    outline: none;
 }
 
 #searchButton {
-    padding: 14px 30px;
-    background-color: #6f4e37;
+    padding: 12px 25px; /* Slightly larger padding */
+    background-color: #007bff; /* A common primary blue */
     color: white;
     border: none;
-    border-radius: 30px;
-    font-size: 1em;
+    border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    font-size: 1em;
+    transition: background-color 0.3s ease; /* Smooth transition */
 }
 
 #searchButton:hover {
-    background-color: #5a3e2e;
+    background-color: #0056b3; /* Darker blue on hover */
 }
 
+/* Filter Controls Styling */
 #filterControls {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: wrap; /* Allow filters to wrap on smaller screens */
     justify-content: center;
     align-items: center;
-    gap: 20px;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    margin-bottom: 40px;
+    gap: 15px; /* Spacing between filter groups/buttons */
+    padding: 15px;
+    background-color: #ffffff; /* White background for filter area */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
 }
 
 .filter-group {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px; /* Spacing within a filter group (label and input) */
 }
 
 .filter-group label {
-    font-size: 1em;
-    color: #5c5c5c;
+    font-size: 0.9em;
+    color: #495057;
 }
 
 .filter-group input[type="number"],
 .filter-group select {
-    padding: 10px 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 1em;
-    background-color: #fdfdfd;
+    padding: 8px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.9em;
 }
 
 .filter-group input[type="number"] {
-    width: 90px;
+    width: 80px; /* Specific width for price inputs */
 }
 
-#filterControls button {
-    padding: 10px 20px;
-    font-size: 1em;
-    border-radius: 6px;
+#filterControls button { /* Style for Apply and Clear filter buttons */
+    padding: 8px 15px;
+    font-size: 0.9em;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 #applyFilterButton {
-    background-color: #4b8673;
+    background-color: #28a745; /* Green, consistent with product link */
     color: white;
-    border: none;
+    border: 1px solid #28a745;
 }
 
 #applyFilterButton:hover {
-    background-color: #3a6e5c;
+    background-color: #218838;
+    border-color: #1e7e34;
 }
 
 #clearFilterButton {
-    background-color: #c0392b;
+    background-color: #dc3545; /* Red for clear/warning */
     color: white;
-    border: none;
+    border: 1px solid #dc3545;
 }
 
 #clearFilterButton:hover {
-    background-color: #a93226;
+    background-color: #c82333;
+    border-color: #bd2130;
 }
+
 
 #results {
     margin-top: 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 25px;
+    display: grid; /* Use grid for card layout */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive grid */
+    gap: 20px; /* Space between cards */
 }
 
 .perfume-card {
-    background-color: #fff;
-    border: none;
-    border-radius: 16px;
-    padding: 25px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    background-color: #ffffff;
+    border: 1px solid #e9ecef; /* Lighter border for cards */
+    border-radius: 8px;
+    padding: 20px; /* More padding inside cards */
+    margin-bottom: 0; /* Grid gap handles spacing */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.075); /* Softer shadow */
     display: flex;
     flex-direction: column;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Hover effect */
 }
 
 .perfume-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(-5px); /* Lift card on hover */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1); /* Enhanced shadow on hover */
 }
 
 .perfume-card img {
-    max-width: 200px;
+    max-width: 180px; /* Allow slightly larger images */
     height: auto;
-    margin-bottom: 20px;
+    margin-bottom: 15px; /* More space below image */
     align-self: center;
-    border-radius: 10px;
+    border-radius: 6px; /* Slightly more rounded corners for image */
 }
 
 .perfume-card h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.5em;
-    color: #3a2e2a;
-    margin-bottom: 10px;
-    text-align: center;
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.25em; /* Slightly larger title */
+    color: #343a40;
+    text-align: center; /* Center title */
 }
 
 .perfume-card p {
-    font-size: 1em;
-    color: #555;
-    line-height: 1.6;
-    margin-bottom: 10px;
+    margin-bottom: 10px; /* Consistent spacing for paragraphs */
+    font-size: 0.95em; /* Slightly larger base text */
+    line-height: 1.5; /* Improved line height */
 }
 
 .perfume-card strong {
-    color: #333;
+    color: #495057; /* Softer strong color */
 }
 
 .description-text {
-    font-size: 0.95em;
-    color: #777;
+    font-size: 0.9em; /* Slightly larger description text */
+    color: #6c757d; /* Softer description color */
     max-height: 120px;
     overflow-y: auto;
-    margin: 10px 0 15px;
-    padding: 12px;
-    border: 1px solid #eee;
-    border-radius: 6px;
-    background-color: #faf9f7;
+    margin-top: 5px; /* Space above description */
+    margin-bottom: 15px; /* Space below description */
+    padding: 10px; /* More padding */
+    border: 1px solid #f1f3f5; /* Very light border */
+    border-radius: 4px;
+    background-color: #f8f9fa; /* Subtle background for description box */
 }
 
 .product-link {
     display: inline-block;
-    margin-top: auto;
-    padding: 12px 20px;
-    background-color: #6f4e37;
+    margin-top: auto; /* Push link to bottom of card if flex allows */
+    padding: 10px 15px; /* Adjusted padding */
+    background-color: #28a745; /* Green for view product button */
     color: white;
     text-decoration: none;
-    border-radius: 30px;
-    font-size: 1em;
+    border-radius: 5px;
+    font-size: 1em; /* Larger font size */
     text-align: center;
+    align-self: center; /* Center button in card */
     transition: background-color 0.3s ease;
 }
 
 .product-link:hover {
-    background-color: #5a3e2e;
+    background-color: #218838; /* Darker green on hover */
 }
