@@ -50,6 +50,74 @@ h1 {
     background-color: #0056b3; /* Darker blue on hover */
 }
 
+/* Filter Controls Styling */
+#filterControls {
+    display: flex;
+    flex-wrap: wrap; /* Allow filters to wrap on smaller screens */
+    justify-content: center;
+    align-items: center;
+    gap: 15px; /* Spacing between filter groups/buttons */
+    padding: 15px;
+    background-color: #ffffff; /* White background for filter area */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Spacing within a filter group (label and input) */
+}
+
+.filter-group label {
+    font-size: 0.9em;
+    color: #495057;
+}
+
+.filter-group input[type="number"],
+.filter-group select {
+    padding: 8px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.filter-group input[type="number"] {
+    width: 80px; /* Specific width for price inputs */
+}
+
+#filterControls button { /* Style for Apply and Clear filter buttons */
+    padding: 8px 15px;
+    font-size: 0.9em;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+#applyFilterButton {
+    background-color: #28a745; /* Green, consistent with product link */
+    color: white;
+    border: 1px solid #28a745;
+}
+
+#applyFilterButton:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+#clearFilterButton {
+    background-color: #dc3545; /* Red for clear/warning */
+    color: white;
+    border: 1px solid #dc3545;
+}
+
+#clearFilterButton:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+
 #results {
     margin-top: 20px;
     display: grid; /* Use grid for card layout */
