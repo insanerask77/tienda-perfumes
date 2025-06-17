@@ -1,8 +1,8 @@
 const translations = {
   en: {
     // From index.html
-    docTitle: "Perfume Search",
-    pageTitle: "Perfume Search",
+    docTitle: "Your favorite perfume",
+    pageTitle: "Your favorite perfume",
     searchInputPlaceholder: "Enter perfume name...",
     searchButton: "Search",
     minPriceLabel: "Min Price:",
@@ -24,7 +24,7 @@ const translations = {
     noValidPerfumesInitial: "No valid perfumes found matching your search after filtering.",
     unexpectedFormat: "Received unexpected data format from the server.",
     errorPrefix: "Error:",
-    tryAgainLater: "Please try again later.",
+    tryAgainLater: "We have not found what you are looking for :(",
     noPerfumesAfterFilter: "No perfumes found matching your criteria.",
 
     // Fallbacks & Card text
@@ -48,8 +48,8 @@ const translations = {
   },
   es: {
     // From index.html
-    docTitle: "Búsqueda de Perfumes",
-    pageTitle: "Búsqueda de Perfumes",
+    docTitle: "Tu perfume favorito",
+    pageTitle: "Tu perfume favorito",
     searchInputPlaceholder: "Introduce el nombre del perfume...",
     searchButton: "Buscar",
     minPriceLabel: "Precio Mín:",
@@ -71,7 +71,7 @@ const translations = {
     noValidPerfumesInitial: "No se encontraron perfumes válidos que coincidan con tu búsqueda después de filtrar.",
     unexpectedFormat: "Se recibió un formato de datos inesperado del servidor.",
     errorPrefix: "Error:",
-    tryAgainLater: "Por favor, inténtalo de nuevo más tarde.",
+    tryAgainLater: "No hemos encontrado lo que buscas :(",
     noPerfumesAfterFilter: "No se encontraron perfumes que coincidan con tus criterios.",
 
     // Fallbacks & Card text
@@ -290,8 +290,8 @@ document.addEventListener('DOMContentLoaded', () => {
             allPerfumesData = [];
             populateStoreFilter(allPerfumesData);
             populateGenderFilter(allPerfumesData);
-            console.error(getTranslatedString('errorPrefix'), error); // Use translated string for console too
-            resultsDiv.innerHTML = `<p>${getTranslatedString('errorPrefix')} ${error.message}. ${getTranslatedString('tryAgainLater')}</p>`;
+            // console.error(getTranslatedString('errorPrefix'), error); // Use translated string for console too
+            resultsDiv.innerHTML = `${getTranslatedString('tryAgainLater')}</p>`;
         }
     });
 
@@ -376,9 +376,11 @@ document.addEventListener('DOMContentLoaded', () => {
             let altText = refTienda;
 
             if (perfume.genero === "Masculino") {
-                finalImageSource = "man.png";
+                finalImageSource = "images/man.png";
             } else if (perfume.genero === "Femenino") {
-                finalImageSource = "woman.png";
+                finalImageSource = "images/woman.png";
+            } else if (perfume.genero === "Unisex") {
+                finalImageSource = "images/unisex.png";
             } else if (imageUrlFromWebhook) {
                 finalImageSource = imageUrlFromWebhook;
             }
