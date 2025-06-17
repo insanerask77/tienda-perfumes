@@ -155,19 +155,35 @@ document.addEventListener('DOMContentLoaded', () => {
             const url = perfume.Url;
             const format = perfume.format || 'Format details not available.';
             const description = perfume.description || 'No description available.';
-            const genero = perfume.genero || 'N/A'; // Get the gender field
+            const genero = perfume.genero || 'N/A';
+            const imageUrlFromWebhook = perfume.image; // Original image URL from webhook
+
+            let finalImageSource = '';
+            let altText = refTienda;
+
+            if (perfume.genero === "Masculino") {
+                finalImageSource = "man.png";
+            } else if (perfume.genero === "Femenino") {
+                finalImageSource = "woman.png";
+            } else if (imageUrlFromWebhook) {
+                finalImageSource = imageUrlFromWebhook;
+            }
 
             let imageElement = '';
-            if (imageUrl) {
-                try {
-                    const validImageUrl = new URL(imageUrl);
-                    imageElement = `<img src="${validImageUrl.href}" alt="${refTienda}">`;
-                } catch (e) {
-                    console.warn('Invalid image URL:', imageUrl);
-                    imageElement = '<p><em>(Invalid image URL)</em></p>';
+            if (finalImageSource) {
+                if (finalImageSource === imageUrlFromWebhook) { // It's a URL from webhook, validate it
+                    try {
+                        const validUrl = new URL(finalImageSource);
+                        imageElement = `<img src="${validUrl.href}" alt="${altText}">`;
+                    } catch (e) {
+                        console.warn('Invalid image URL from webhook:', finalImageSource);
+                        imageElement = '<p><em>(Invalid image URL)</em></p>';
+                    }
+                } else { // It's a local gender image ("man.png" or "woman.png")
+                    imageElement = `<img src="${finalImageSource}" alt="${altText}">`;
                 }
             } else {
-                imageElement = '<p><em>(No image)</em></p>';
+                imageElement = '<p><em>(No image provided)</em></p>';
             }
 
             let urlLink = '';
