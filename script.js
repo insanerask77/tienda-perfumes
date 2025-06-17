@@ -8,17 +8,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!priceStr || typeof priceStr !== 'string') {
             return NaN;
         }
-        // Take the first part if it's a range
         const parts = priceStr.split('–');
         let numericPart = parts[0].trim();
-        // Remove currency symbol and whitespace, then replace comma with dot
         numericPart = numericPart.replace(/€/g, '').replace(/,/g, '.').trim();
         return parseFloat(numericPart);
     }
 
     searchButton.addEventListener('click', async () => {
         const query = searchInput.value.trim();
-        resultsDiv.innerHTML = ''; // Clear previous results
+        resultsDiv.innerHTML = '';
 
         if (!query) {
             resultsDiv.innerHTML = '<p>Please enter a perfume name to search.</p>';
@@ -44,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
             let perfumes = await response.json();
 
             if (Array.isArray(perfumes)) {
-                // Filter out entries that are essentially empty
                 perfumes = perfumes.filter(perfume =>
                     !(perfume.Precio === "" && perfume.Tienda === "" && perfume.RefTienda === "")
                 );
@@ -53,32 +50,46 @@ document.addEventListener('DOMContentLoaded', () => {
                     perfumes.sort((a, b) => {
                         const priceA = parsePrice(a.Precio);
                         const priceB = parsePrice(b.Precio);
-
                         if (isNaN(priceA) && isNaN(priceB)) return 0;
-                        if (isNaN(priceA)) return 1; // Put items without a valid price at the end
+                        if (isNaN(priceA)) return 1;
                         if (isNaN(priceB)) return -1;
-
                         return priceA - priceB;
                     });
 
+                    // Clear "Searching..." message before adding results
+                    resultsDiv.innerHTML = '';
+
                     perfumes.forEach(perfume => {
                         const perfumeDiv = document.createElement('div');
-                        perfumeDiv.style.border = '1px solid #eee';
-                        perfumeDiv.style.padding = '10px';
-                        perfumeDiv.style.marginBottom = '10px';
-                        perfumeDiv.style.borderRadius = '4px';
+                        // This class will be used for styling the card
+                        perfumeDiv.className = 'perfume-card';
 
+                        const imageUrl = perfume.image;
                         const refTienda = perfume.RefTienda || 'N/A';
                         const tienda = perfume.Tienda || 'N/A';
                         const precioDisplay = perfume.Precio || 'Price not available';
                         const url = perfume.Url;
+                        const format = perfume.format || 'Format details not available.';
+                        const description = perfume.description || 'No description available.';
+
+                        let imageElement = '';
+                        if (imageUrl) {
+                            try {
+                                const validImageUrl = new URL(imageUrl);
+                                imageElement = `<img src="${validImageUrl.href}" alt="${refTienda}" style="max-width: 100px; height: auto; margin-bottom: 10px;">`; // Basic inline style for now
+                            } catch (e) {
+                                console.warn('Invalid image URL:', imageUrl);
+                                imageElement = '<p><em>(Invalid image URL)</em></p>';
+                            }
+                        } else {
+                            imageElement = '<p><em>(No image)</em></p>';
+                        }
 
                         let urlLink = '';
                         if (url) {
                             try {
-                                // Ensure URL is valid and absolute, or make it so if possible
                                 const validUrl = new URL(url.startsWith('http') ? url : `http://${url}`);
-                                urlLink = `<a href="${validUrl.href}" target="_blank">View Product</a>`;
+                                urlLink = `<a href="${validUrl.href}" target="_blank" class="product-link">View Product</a>`;
                             } catch (e) {
                                 console.warn('Invalid URL:', url);
                                 urlLink = '<span>(Invalid URL)</span>';
@@ -88,12 +99,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
 
                         perfumeDiv.innerHTML = `
+                            ${imageElement}
                             <h3>${refTienda}</h3>
                             <p><strong>Store:</strong> ${tienda}</p>
                             <p><strong>Price:</strong> ${precioDisplay}</p>
+                            <p><strong>Formats:</strong> ${format}</p>
+                            <p><strong>Description:</strong></p>
+                            <div class="description-text">${description}</div>
                             <p>${urlLink}</p>
-                            <hr>
                         `;
+                        // Removed the <hr> for cleaner card design, will handle separation with CSS
                         resultsDiv.appendChild(perfumeDiv);
                     });
                 } else {
