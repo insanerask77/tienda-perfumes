@@ -81,8 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
             allPerfumesData = []; // Reset on error
             populateStoreFilter(allPerfumesData);
             populateGenderFilter(allPerfumesData); // Clear gender filter
-            console.error('Error fetching or processing data:', error);
-            resultsDiv.innerHTML = `<p>Error: ${error.message}. Please try again later.</p>`;
+            // console.error('Error fetching or processing data:', error);
+            resultsDiv.innerHTML = `<p>No se encontraron resultados</p>`;
         }
     });
 
@@ -162,9 +162,11 @@ document.addEventListener('DOMContentLoaded', () => {
             let altText = refTienda;
 
             if (perfume.genero === "Masculino") {
-                finalImageSource = "man.png";
+                finalImageSource = "images/man.png";
             } else if (perfume.genero === "Femenino") {
-                finalImageSource = "woman.png";
+                finalImageSource = "images/woman.png";
+            } else if (perfume.genero === "Unisex") {
+                finalImageSource = "images/unisex.png";
             } else if (imageUrlFromWebhook) {
                 finalImageSource = imageUrlFromWebhook;
             }
@@ -204,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h3>${refTienda}</h3>
                 <p><strong>Store:</strong> ${tienda}</p>
                 <p><strong>Price:</strong> ${precioDisplay}</p>
-                <p><strong>Gender:</strong> ${genero}</p> {/* Added gender display */}
+                <p><strong>Gender:</strong> ${genero}</p>
                 <p><strong>Formats:</strong> ${format}</p>
                 <p><strong>Description:</strong></p>
                 <div class="description-text">${description}</div>

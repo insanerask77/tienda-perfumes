@@ -1,200 +1,205 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font stack */
+    font-family: 'Playfair Display', 'Segoe UI', Tahoma, Geneva, Verdana, serif;
     margin: 0;
-    padding: 20px; /* Add padding to body instead of margin */
-    background-color: #f8f9fa; /* Lighter background */
-    color: #343a40; /* Darker text for better contrast */
+    padding: 40px;
+    background-color: #f5f3f0;
+    color: #2e2e2e;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Center content */
+    align-items: center;
 }
 
-.container { /* Add a wrapper for main content */
+.container {
     width: 90%;
-    max-width: 1200px; /* Max width for content area */
+    max-width: 1200px;
 }
 
 h1 {
-    color: #2c3e50; /* A deeper, more sophisticated color */
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8em;
+    color: #3a2e2a;
     text-align: center;
-    margin-bottom: 30px; /* More space below heading */
+    margin-bottom: 40px;
+    letter-spacing: 1px;
 }
 
-#searchControls { /* Wrapper for input and button */
+#searchControls {
     display: flex;
     justify-content: center;
-    margin-bottom: 30px;
+    margin-bottom: 35px;
 }
 
 #searchInput {
-    padding: 12px 15px; /* Slightly larger padding */
+    padding: 14px 20px;
     margin-right: 10px;
-    border: 1px solid #ced4da; /* Softer border color */
-    border-radius: 5px;
-    width: 350px; /* Slightly wider */
+    border: 1px solid #d0cfcf;
+    border-radius: 30px;
+    width: 360px;
     font-size: 1em;
+    background-color: #ffffff;
+    transition: box-shadow 0.3s ease;
+}
+
+#searchInput:focus {
+    box-shadow: 0 0 0 3px rgba(62, 50, 46, 0.1);
+    outline: none;
 }
 
 #searchButton {
-    padding: 12px 25px; /* Slightly larger padding */
-    background-color: #007bff; /* A common primary blue */
+    padding: 14px 30px;
+    background-color: #6f4e37;
     color: white;
     border: none;
-    border-radius: 5px;
-    cursor: pointer;
+    border-radius: 30px;
     font-size: 1em;
-    transition: background-color 0.3s ease; /* Smooth transition */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 #searchButton:hover {
-    background-color: #0056b3; /* Darker blue on hover */
+    background-color: #5a3e2e;
 }
 
-/* Filter Controls Styling */
 #filterControls {
     display: flex;
-    flex-wrap: wrap; /* Allow filters to wrap on smaller screens */
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 15px; /* Spacing between filter groups/buttons */
-    padding: 15px;
-    background-color: #ffffff; /* White background for filter area */
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    margin-bottom: 30px;
+    gap: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 40px;
 }
 
 .filter-group {
     display: flex;
     align-items: center;
-    gap: 8px; /* Spacing within a filter group (label and input) */
+    gap: 10px;
 }
 
 .filter-group label {
-    font-size: 0.9em;
-    color: #495057;
+    font-size: 1em;
+    color: #5c5c5c;
 }
 
 .filter-group input[type="number"],
 .filter-group select {
-    padding: 8px 10px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    font-size: 0.9em;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    background-color: #fdfdfd;
 }
 
 .filter-group input[type="number"] {
-    width: 80px; /* Specific width for price inputs */
+    width: 90px;
 }
 
-#filterControls button { /* Style for Apply and Clear filter buttons */
-    padding: 8px 15px;
-    font-size: 0.9em;
-    border-radius: 4px;
+#filterControls button {
+    padding: 10px 20px;
+    font-size: 1em;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    transition: background-color 0.3s ease;
 }
 
 #applyFilterButton {
-    background-color: #28a745; /* Green, consistent with product link */
+    background-color: #4b8673;
     color: white;
-    border: 1px solid #28a745;
+    border: none;
 }
 
 #applyFilterButton:hover {
-    background-color: #218838;
-    border-color: #1e7e34;
+    background-color: #3a6e5c;
 }
 
 #clearFilterButton {
-    background-color: #dc3545; /* Red for clear/warning */
+    background-color: #c0392b;
     color: white;
-    border: 1px solid #dc3545;
+    border: none;
 }
 
 #clearFilterButton:hover {
-    background-color: #c82333;
-    border-color: #bd2130;
+    background-color: #a93226;
 }
-
 
 #results {
     margin-top: 20px;
-    display: grid; /* Use grid for card layout */
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive grid */
-    gap: 20px; /* Space between cards */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 25px;
 }
 
 .perfume-card {
-    background-color: #ffffff;
-    border: 1px solid #e9ecef; /* Lighter border for cards */
-    border-radius: 8px;
-    padding: 20px; /* More padding inside cards */
-    margin-bottom: 0; /* Grid gap handles spacing */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.075); /* Softer shadow */
+    background-color: #fff;
+    border: none;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Hover effect */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .perfume-card:hover {
-    transform: translateY(-5px); /* Lift card on hover */
-    box-shadow: 0 6px 12px rgba(0,0,0,0.1); /* Enhanced shadow on hover */
+    transform: translateY(-8px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
 }
 
 .perfume-card img {
-    max-width: 180px; /* Allow slightly larger images */
+    max-width: 200px;
     height: auto;
-    margin-bottom: 15px; /* More space below image */
+    margin-bottom: 20px;
     align-self: center;
-    border-radius: 6px; /* Slightly more rounded corners for image */
+    border-radius: 10px;
 }
 
 .perfume-card h3 {
-    margin-top: 0;
-    margin-bottom: 12px;
-    font-size: 1.25em; /* Slightly larger title */
-    color: #343a40;
-    text-align: center; /* Center title */
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5em;
+    color: #3a2e2a;
+    margin-bottom: 10px;
+    text-align: center;
 }
 
 .perfume-card p {
-    margin-bottom: 10px; /* Consistent spacing for paragraphs */
-    font-size: 0.95em; /* Slightly larger base text */
-    line-height: 1.5; /* Improved line height */
+    font-size: 1em;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 10px;
 }
 
 .perfume-card strong {
-    color: #495057; /* Softer strong color */
+    color: #333;
 }
 
 .description-text {
-    font-size: 0.9em; /* Slightly larger description text */
-    color: #6c757d; /* Softer description color */
+    font-size: 0.95em;
+    color: #777;
     max-height: 120px;
     overflow-y: auto;
-    margin-top: 5px; /* Space above description */
-    margin-bottom: 15px; /* Space below description */
-    padding: 10px; /* More padding */
-    border: 1px solid #f1f3f5; /* Very light border */
-    border-radius: 4px;
-    background-color: #f8f9fa; /* Subtle background for description box */
+    margin: 10px 0 15px;
+    padding: 12px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    background-color: #faf9f7;
 }
 
 .product-link {
     display: inline-block;
-    margin-top: auto; /* Push link to bottom of card if flex allows */
-    padding: 10px 15px; /* Adjusted padding */
-    background-color: #28a745; /* Green for view product button */
+    margin-top: auto;
+    padding: 12px 20px;
+    background-color: #6f4e37;
     color: white;
     text-decoration: none;
-    border-radius: 5px;
-    font-size: 1em; /* Larger font size */
+    border-radius: 30px;
+    font-size: 1em;
     text-align: center;
-    align-self: center; /* Center button in card */
     transition: background-color 0.3s ease;
 }
 
 .product-link:hover {
-    background-color: #218838; /* Darker green on hover */
+    background-color: #5a3e2e;
 }
