@@ -45,8 +45,9 @@ function App() {
       }
 
       const data = await resp.json();
-      setAiSearchResults(data.matchedPerfumes || []);
+      setAiSearchResults(data.matchedEquivalencias || []); // <-- Key change here
       // console.log("AI Analysis:", data.aiAnalysis); // For debugging
+      // console.log("AI Matched Equivalencias:", data.matchedEquivalencias);
 
     } catch (error) {
       console.error("Error in AI search:", error);
@@ -266,9 +267,9 @@ function App() {
                 gap: "1.8rem",
               }}
             >
-              {aiSearchResults.map((perfume) => (
+              {aiSearchResults.map((eq) => ( // Changed 'perfume' to 'eq'
                 <div
-                  key={perfume.id} // Assuming perfume items have an id
+                  key={eq.id} // Use eq.id
                   style={{
                     backgroundColor: "#fff",
                     borderRadius: "12px",
@@ -294,9 +295,9 @@ function App() {
                       marginBottom: "0.4rem",
                       color: "#3c2f2f",
                     }}
-                    title={perfume.title}
+                    title={eq.title}
                   >
-                    {perfume.title}
+                    {eq.title || "Título no disponible"}
                   </h3>
                   <p
                     style={{
@@ -304,20 +305,56 @@ function App() {
                       fontSize: "0.9rem",
                       color: "#7a6f6f",
                       marginBottom: "0.8rem",
-                      maxHeight: "4.5em", // Limit height for description
+                      maxHeight: "4.5em", // Limit height for description (adjust as needed)
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       display: "-webkit-box",
-                      WebkitLineClamp: 3, // Max 3 lines
+                      WebkitLineClamp: 3, // Max 3 lines (adjust as needed)
                       WebkitBoxOrient: "vertical",
                     }}
-                    title={perfume.description}
+                    title={eq.description}
                   >
-                    {perfume.description || "Descripción no disponible."}
+                    {eq.description || "Descripción no disponible."}
                   </p>
-                  {/* Display other relevant perfume details if available */}
-                  {perfume.brand && <p style={{ fontWeight: "600", marginBottom: "0.2rem" }}>Brand: <span style={{ color: "#b29160", fontWeight: "700" }}>{perfume.brand}</span></p>}
-                  {/* Add a buy link or other actions if applicable for 'perfumes' collection items */}
+                  <p style={{ fontWeight: "600", marginBottom: "0.2rem" }}>
+                    Tienda:{" "}
+                    <span style={{ color: "#b29160", fontWeight: "700" }}>
+                      {eq.store || "No especificada"}
+                    </span>
+                  </p>
+                  <p style={{ fontWeight: "600", marginBottom: "0.6rem" }}>
+                    Género:{" "}
+                    <span style={{ color: "#b29160", fontWeight: "700" }}>
+                      {eq.gender || "Sin especificar"}
+                    </span>
+                  </p>
+                  <p style={{ fontWeight: "700", fontSize: "1.1rem", color: "#7a6f6f", marginBottom: "1rem" }}>
+                    {eq.price || "Precio no disponible"}
+                  </p>
+                  {eq.buy_link && ( // Conditionally render link if available
+                    <a
+                      href={eq.buy_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        textAlign: "center",
+                        backgroundColor: "#b29160",
+                        color: "#fff",
+                        padding: "0.6rem",
+                        borderRadius: "8px",
+                        textDecoration: "none",
+                        fontWeight: "700",
+                        transition: "background-color 0.3s",
+                      }}
+                      onMouseEnter={(e) => (e.target.style.backgroundColor = "#8c6f2c")}
+                      onMouseLeave={(e) => (e.target.style.backgroundColor = "#b29160")}
+                    >
+                      Comprar
+                    </a>
+                  )}
+                  {!eq.buy_link && ( // Optional: display a message if no buy link
+                      <p style={{textAlign: 'center', color: '#aaa', fontSize: '0.9rem'}}>Enlace de compra no disponible</p>
+                  )}
                 </div>
               ))}
             </div>
