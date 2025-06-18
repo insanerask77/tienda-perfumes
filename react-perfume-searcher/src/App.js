@@ -305,16 +305,11 @@ function App() {
                       fontSize: "0.9rem",
                       color: "#7a6f6f",
                       marginBottom: "0.8rem",
-                      maxHeight: "4.5em", // Limit height for description (adjust as needed)
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 3, // Max 3 lines (adjust as needed)
-                      WebkitBoxOrient: "vertical",
+                      // Removed WebkitLineClamp related properties
                     }}
-                    title={eq.description}
+                    // Removed title prop
                   >
-                    {eq.description || "Descripción no disponible."}
+                    <span dangerouslySetInnerHTML={{ __html: eq.description || "Descripción no disponible." }} />
                   </p>
                   <p style={{ fontWeight: "600", marginBottom: "0.2rem" }}>
                     Tienda:{" "}
@@ -491,12 +486,11 @@ function App() {
                 fontSize: "0.9rem",
                 color: "#7a6f6f",
                 marginBottom: "0.8rem",
-                height: "3rem",
-                overflow: "hidden",
+                // Removed height: "3rem" and overflow: "hidden"
               }}
-              title={eq.description}
+              // Removed title prop
             >
-              {eq.description}
+              <span dangerouslySetInnerHTML={{ __html: eq.description }} />
             </p>
             <p
               style={{

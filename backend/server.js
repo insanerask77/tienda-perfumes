@@ -25,7 +25,7 @@ app.get("/api/perfumes", async (req, res) => {
     return res.status(400).json({ error: "searchText query parameter is required" });
   }
   const decodedSearchText = decodeURIComponent(searchText);
-  console.log(`Received perfume search request for: "${decodedSearchText}"`);
+  console.log(`LOG: Received perfume search request for: "${decodedSearchText}"`);
 
   // Step 1: Direct search in 'equivalencias'
   const equivalenciaDirectSearchFields = ["title", "description"]; // Add other relevant fields if needed
@@ -59,30 +59,31 @@ app.get("/api/perfumes", async (req, res) => {
   const perfumeSearchFilter = `(${perfumeFilterParts.join(" || ")})`; // Renamed perfumeFilter to perfumeSearchFilter
   const perfumesUrl = `${PB_URL}/collections/perfumes/records?filter=${encodeURIComponent(perfumeSearchFilter)}&perPage=100`;
 
-  console.log(`Searching 'perfumes' collection with filter: ${perfumeSearchFilter}`);
-  console.log(`Perfumes collection URL: ${perfumesUrl}`);
+  console.log(`LOG: Searching 'perfumes' collection with filter: ${perfumeSearchFilter}`);
+  console.log(`LOG: Perfumes collection URL: ${perfumesUrl}`);
 
   let matchedPerfumes = [];
   try {
     const perfumeResp = await fetch(perfumesUrl);
     if (!perfumeResp.ok) {
       const errorBody = await perfumeResp.text();
-      console.error(`Perfumes collection request failed with status ${perfumeResp.status}: ${errorBody}`);
+      console.error(`LOG: Perfumes collection request failed with status ${perfumeResp.status}: ${errorBody}`);
       // Allow to continue if this step fails, directEquivalencias might still have results
     } else {
       const perfumeData = await perfumeResp.json();
       matchedPerfumes = perfumeData.items || [];
-      console.log(`Found ${matchedPerfumes.length} perfumes matching initial criteria.`);
+      console.log(`LOG: Found ${matchedPerfumes.length} perfumes matching initial criteria.`);
+      console.log("LOG: Matched Perfumes:", JSON.stringify(matchedPerfumes.map(p => ({id: p.id, title: p.title})), null, 2));
     }
   } catch (error) {
-    console.error("Error fetching data from 'perfumes' collection:", error);
+    console.error("LOG: Error fetching data from 'perfumes' collection:", error);
     // Allow to continue
   }
 
   let linkedEquivalencias = []; // Renamed from allEquivalencias
   if (matchedPerfumes.length > 0) {
     const perfumeIds = matchedPerfumes.map(p => p.id);
-    console.log(`Extracted ${perfumeIds.length} perfume IDs for fetching linked equivalencias.`);
+    console.log(`LOG: Extracted ${perfumeIds.length} perfume IDs for fetching linked equivalencias:`, perfumeIds);
 
     if (perfumeIds.length > 0) {
       // Fetch equivalencias linked to these perfume IDs (Original Step 2)
@@ -90,28 +91,30 @@ app.get("/api/perfumes", async (req, res) => {
       const equivalenciaIdFilter = `(${equivalenciaIdFilterParts.join(" || ")})`;
       const equivalenciasLinkedUrl = `${PB_URL}/collections/equivalencias/records?filter=${encodeURIComponent(equivalenciaIdFilter)}&perPage=200&sort=title`;
 
-      console.log(`Fetching linked 'equivalencias' with filter: ${equivalenciaIdFilter}`);
-      console.log(`Linked Equivalencias URL: ${equivalenciasLinkedUrl}`);
+      console.log(`LOG: Fetching linked 'equivalencias' with filter: ${equivalenciaIdFilter}`);
+      console.log(`LOG: Linked Equivalencias URL: ${equivalenciasLinkedUrl}`);
 
       try {
         const equivalenciaResp = await fetch(equivalenciasLinkedUrl);
         if (equivalenciaResp.ok) {
           const equivalenciaData = await equivalenciaResp.json();
           linkedEquivalencias = equivalenciaData.items || [];
-          console.log(`Fetched ${linkedEquivalencias.length} total equivalencias linked to the perfumes.`);
+          console.log(`LOG: Fetched ${linkedEquivalencias.length} total equivalencias linked to the perfumes.`);
+          console.log("LOG: Linked Equivalencias Sample:", JSON.stringify(linkedEquivalencias.slice(0, 5).map(eq => ({id: eq.id, title: eq.title})), null, 2));
         } else {
           const errorBody = await equivalenciaResp.text();
-          console.error(`Linked 'equivalencias' collection request failed with status ${equivalenciaResp.status}: ${errorBody}`);
+          console.error(`LOG: Linked 'equivalencias' collection request failed with status ${equivalenciaResp.status}: ${errorBody}`);
         }
       } catch (error) {
-        console.error("Error fetching data from linked 'equivalencias' collection:", error);
+        console.error("LOG: Error fetching data from linked 'equivalencias' collection:", error);
       }
     }
   } else {
-    console.log("No perfumes found matching the initial criteria. Skipping fetch for linked equivalencias.");
+    console.log("LOG: No perfumes found matching the initial criteria. Skipping fetch for linked equivalencias.");
   }
 
   // Step 3: Combine direct and linked equivalencias and deduplicate
+  console.log("LOG: Direct Equivalencias before combining:", JSON.stringify(directEquivalencias.map(eq => ({id: eq.id, title: eq.title})), null, 2));
   const combinedEquivalencias = [...directEquivalencias, ...linkedEquivalencias];
   const uniqueEquivalenciasMap = new Map();
   combinedEquivalencias.forEach(eq => {
@@ -121,8 +124,8 @@ app.get("/api/perfumes", async (req, res) => {
   });
   const finalUniqueEquivalencias = Array.from(uniqueEquivalenciasMap.values());
 
-  console.log(`Combined ${directEquivalencias.length} direct and ${linkedEquivalencias.length} linked equivalencias.`);
-  console.log(`Returning ${finalUniqueEquivalencias.length} unique equivalencias.`);
+  console.log(`LOG: Combined ${directEquivalencias.length} direct and ${linkedEquivalencias.length} linked equivalencias.`);
+  console.log(`LOG: Returning ${finalUniqueEquivalencias.length} unique equivalencias.`);
 
   res.json(finalUniqueEquivalencias);
 });
