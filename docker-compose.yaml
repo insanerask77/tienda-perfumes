@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  pocketbase:
+    build:
+      context: ./db
+      # args: # Not strictly needed if version is fixed in Dockerfile, but good practice
+      #   PB_VERSION: 0.28.3 # Ensure this matches your db/Dockerfile or remove if fixed there
+    image: pocketbase-perfume-app # Added an image name
+    container_name: perfume_pocketbase
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./db/data:/pb/pb_data # Adjusted path relative to root docker-compose
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./ # Context is root, Dockerfile is backend/Dockerfile
+      dockerfile: backend/Dockerfile
+    image: backend-perfume-app
+    container_name: perfume_backend
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - NODE_ENV=production
+      # PB_URL will be http://pocketbase:8080 because services can reach each other by service name
+    depends_on:
+      - pocketbase
+    restart: unless-stopped
