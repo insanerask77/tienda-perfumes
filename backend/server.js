@@ -31,10 +31,11 @@ app.get("/api/perfumes", async (req, res) => {
   console.log(`LOG: Received perfume search request for: "${decodedSearchText}"`);
 
   // Step 1: Direct search in 'equivalencias'
-  const equivalenciaDirectSearchFields = ["perfume_id","title", "description"]; // Add other relevant fields if needed
+  const equivalenciaDirectSearchFields = ["title", "description"]; // Updated: Search in title and description of equivalencias
   const equivalenciaDirectFilterParts = equivalenciaDirectSearchFields.map(field => `${field}~"${decodedSearchText}"`);
   const equivalenciaDirectFilter = `(${equivalenciaDirectFilterParts.join(" || ")})`;
-  const equivalenciasDirectUrl = `${PB_URL}/collections/equivalencias/records?filter=${encodeURIComponent(equivalenciaDirectFilter)}&perPage=100`; // Adjust perPage as needed
+  // Added expand=perfume_id to fetch related perfume data
+  const equivalenciasDirectUrl = `${PB_URL}/collections/equivalencias/records?filter=${encodeURIComponent(equivalenciaDirectFilter)}&expand=perfume_id&perPage=100`;
 
   console.log(`Searching 'equivalencias' directly with filter: ${equivalenciaDirectFilter}`);
   console.log(`Direct Equivalencias URL: ${equivalenciasDirectUrl}`);
@@ -44,7 +45,10 @@ app.get("/api/perfumes", async (req, res) => {
     const eqDirectResp = await fetch(equivalenciasDirectUrl);
     if (eqDirectResp.ok) {
       const eqDirectData = await eqDirectResp.json();
-      directEquivalencias = eqDirectData.items || [];
+      directEquivalencias = (eqDirectData.items || []).map(eq => ({
+        ...eq,
+        perfume_title: eq.expand?.perfume_id?.title || "Nombre de Perfume Original no Disponible"
+      }));
       console.log(`Found ${directEquivalencias.length} equivalencias from direct search.`);
     } else {
       const errorBody = await eqDirectResp.text();
@@ -56,10 +60,10 @@ app.get("/api/perfumes", async (req, res) => {
     // Decide if this should be a fatal error or just log and continue
   }
 
-  // Step 2: Search in 'perfumes' collection broadly (Original Step 1)
-  const perfumeSearchFields = ["perfume_id","title", "description", "brand"];
+  // Step 2: Search in 'perfumes' collection broadly
+  const perfumeSearchFields = ["title", "brand", "description"]; // Updated: Search in title, brand, description of perfumes
   const perfumeFilterParts = perfumeSearchFields.map(field => `${field}~\"${decodedSearchText}\"`);
-  const perfumeSearchFilter = `(${perfumeFilterParts.join(" || ")})`; // Renamed perfumeFilter to perfumeSearchFilter
+  const perfumeSearchFilter = `(${perfumeFilterParts.join(" || ")})`;
   const perfumesUrl = `${PB_URL}/collections/perfumes/records?filter=${encodeURIComponent(perfumeSearchFilter)}&perPage=100`;
 
   console.log(`LOG: Searching 'perfumes' collection with filter: ${perfumeSearchFilter}`);
@@ -89,10 +93,11 @@ app.get("/api/perfumes", async (req, res) => {
     console.log(`LOG: Extracted ${perfumeIds.length} perfume IDs for fetching linked equivalencias:`, perfumeIds);
 
     if (perfumeIds.length > 0) {
-      // Fetch equivalencias linked to these perfume IDs (Original Step 2)
+      // Fetch equivalencias linked to these perfume IDs
       const equivalenciaIdFilterParts = perfumeIds.map(id => `perfume_id="${id}"`);
       const equivalenciaIdFilter = `(${equivalenciaIdFilterParts.join(" || ")})`;
-      const equivalenciasLinkedUrl = `${PB_URL}/collections/equivalencias/records?filter=${encodeURIComponent(equivalenciaIdFilter)}&perPage=200&sort=title`;
+      // Added expand=perfume_id to fetch related perfume data
+      const equivalenciasLinkedUrl = `${PB_URL}/collections/equivalencias/records?filter=${encodeURIComponent(equivalenciaIdFilter)}&expand=perfume_id&perPage=200&sort=title`;
 
       console.log(`LOG: Fetching linked 'equivalencias' with filter: ${equivalenciaIdFilter}`);
       console.log(`LOG: Linked Equivalencias URL: ${equivalenciasLinkedUrl}`);
@@ -101,9 +106,12 @@ app.get("/api/perfumes", async (req, res) => {
         const equivalenciaResp = await fetch(equivalenciasLinkedUrl);
         if (equivalenciaResp.ok) {
           const equivalenciaData = await equivalenciaResp.json();
-          linkedEquivalencias = equivalenciaData.items || [];
+          linkedEquivalencias = (equivalenciaData.items || []).map(eq => ({
+            ...eq,
+            perfume_title: eq.expand?.perfume_id?.title || "Nombre de Perfume Original no Disponible"
+          }));
           console.log(`LOG: Fetched ${linkedEquivalencias.length} total equivalencias linked to the perfumes.`);
-          console.log("LOG: Linked Equivalencias Sample:", JSON.stringify(linkedEquivalencias.slice(0, 5).map(eq => ({id: eq.id, title: eq.title})), null, 2));
+          console.log("LOG: Linked Equivalencias Sample:", JSON.stringify(linkedEquivalencias.slice(0, 5).map(eq => ({id: eq.id, title: eq.title, perfume_title: eq.perfume_title})), null, 2));
         } else {
           const errorBody = await equivalenciaResp.text();
           console.error(`LOG: Linked 'equivalencias' collection request failed with status ${equivalenciaResp.status}: ${errorBody}`);

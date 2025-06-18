@@ -295,10 +295,24 @@ function App() {
                       marginBottom: "0.4rem",
                       color: "#3c2f2f",
                     }}
-                    title={eq.title}
+                    title={eq.perfume_title || "Perfume Original no Disponible"} // AI Search: Main title
                   >
-                    {eq.title || "Título no disponible"}
+                    {eq.perfume_title || "Perfume Original no Disponible"}
                   </h3>
+                  {/* AI Search: Subtitle for equivalencia's own title */}
+                  <h4
+                    style={{
+                      fontFamily: "\'Playfair Display\', serif",
+                      fontWeight: "600",
+                      fontSize: "1.1rem",
+                      color: "#5c4f4f",
+                      marginBottom: "0.3rem",
+                      marginTop: "-0.2rem",
+                    }}
+                    title={eq.title || "Equivalencia no Disponible"}
+                  >
+                    {eq.title || "Equivalencia no Disponible"}
+                  </h4>
                   <p
                     style={{
                       fontStyle: "italic",
@@ -476,23 +490,23 @@ function App() {
                 marginBottom: "0.4rem",
                 color: "#3c2f2f",
               }}
-              title={eq.perfume_id || "Nombre no disponible"} // Use perfume_id for the tooltip as well
+              title={eq.perfume_title || "Perfume Original no Disponible"} // Regular Search: Main title
             >
-              {eq.perfume_id || "Nombre no disponible"}
+              {eq.perfume_title || "Perfume Original no Disponible"}
             </h3>
-            {/* Subtitle for eq.title */}
+            {/* Regular Search: Subtitle for equivalencia's own title */}
             <h4
               style={{
                 fontFamily: "\'Playfair Display\', serif",
-                fontWeight: "600", // Slightly less prominent than title
-                fontSize: "1.1rem", // Smaller than title
-                color: "#5c4f4f", // Slightly different color
+                fontWeight: "600",
+                fontSize: "1.1rem",
+                color: "#5c4f4f",
                 marginBottom: "0.3rem",
-                marginTop: "-0.2rem", // Adjust spacing if needed
+                marginTop: "-0.2rem",
               }}
-              title={eq.title || "Título no disponible"}
+              title={eq.title || "Equivalencia no Disponible"} // Regular Search: Subtitle text
             >
-              {eq.title || "Título no disponible"}
+              {eq.title || "Equivalencia no Disponible"}
             </h4>
             <p
               style={{

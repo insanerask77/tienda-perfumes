@@ -147,7 +147,8 @@ Proporciona únicamente el objeto JSON en tu respuesta. Asegúrate de que la res
               console.log(`Found ${perfumeIds.length} perfume IDs from AI search. Fetching their equivalencias.`);
               const equivalenciaIdFilterParts = perfumeIds.map(id => `perfume_id="${id}"`);
               const equivalenciaIdFilter = `(${equivalenciaIdFilterParts.join(" || ")})`;
-              const equivalenciasUrl = `${PB_URL}/collections/equivalencias/records?filter=${encodeURIComponent(equivalenciaIdFilter)}&perPage=100&sort=title`;
+              // Added expand=perfume_id to fetch related perfume data
+              const equivalenciasUrl = `${PB_URL}/collections/equivalencias/records?filter=${encodeURIComponent(equivalenciaIdFilter)}&expand=perfume_id&perPage=100&sort=title`;
 
               console.log(`Fetching 'equivalencias' for AI results with filter: ${equivalenciaIdFilter}`);
               console.log(`Equivalencias URL: ${equivalenciasUrl}`);
@@ -156,7 +157,11 @@ Proporciona únicamente el objeto JSON en tu respuesta. Asegúrate de que la res
                   const equivalenciaResp = await fetch(equivalenciasUrl);
                   if (equivalenciaResp.ok) {
                       const equivalenciaData = await equivalenciaResp.json();
-                      finalEquivalencias = equivalenciaData.items || [];
+                      // Process finalEquivalencias to include perfume_title
+                      finalEquivalencias = (equivalenciaData.items || []).map(eq => ({
+                        ...eq,
+                        perfume_title: eq.expand?.perfume_id?.title || "Nombre de Perfume Original no Disponible"
+                      }));
                       console.log(`Fetched ${finalEquivalencias.length} total equivalencias for AI matched perfumes.`);
                   } else {
                       const errorBody = await equivalenciaResp.text();
