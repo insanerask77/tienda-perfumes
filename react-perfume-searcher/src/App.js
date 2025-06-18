@@ -13,6 +13,49 @@ function App() {
   const [generosDisponibles, setGenerosDisponibles] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // State for AI Search
+  const [aiSearchDescription, setAiSearchDescription] = useState("");
+  const [aiSearchResults, setAiSearchResults] = useState([]);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
+
+  // Handles AI-powered search
+  async function handleAiSearch(e) {
+    e.preventDefault();
+    if (!aiSearchDescription.trim()) {
+      setAiError("Please enter a description for the AI search.");
+      return;
+    }
+    setAiLoading(true);
+    setAiSearchResults([]);
+    setAiError(null);
+
+    try {
+      const resp = await fetch(`${BACKEND_API_URL}/perfumes/ai-search`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ description: aiSearchDescription }),
+      });
+
+      if (!resp.ok) {
+        const errorData = await resp.json().catch(() => ({ error: `AI search failed with status: ${resp.status}` }));
+        throw new Error(errorData.error || `AI search failed with status: ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      setAiSearchResults(data.matchedPerfumes || []);
+      // console.log("AI Analysis:", data.aiAnalysis); // For debugging
+
+    } catch (error) {
+      console.error("Error in AI search:", error);
+      setAiError(error.message || "An unexpected error occurred during AI search.");
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
   // Busca perfumes en el NUEVO BACKEND
   async function buscarPerfumes(texto) {
     const resp = await fetch(
@@ -160,6 +203,126 @@ function App() {
           {loading ? "Buscando..." : "Buscar"}
         </button>
       </form>
+
+      {/* AI Search Section */}
+      <section style={{ marginTop: "2rem", marginBottom: "2rem", padding: "1.5rem", backgroundColor: "#e8e0d6", borderRadius: "12px" }}>
+        <h2 style={{ textAlign: "center", marginBottom: "1rem", color: "#3c2f2f" }}>Describe Your Ideal Perfume</h2>
+        <form onSubmit={handleAiSearch} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <textarea
+            placeholder="e.g., I'm looking for a warm, spicy fragrance with vanilla notes, suitable for evening wear."
+            value={aiSearchDescription}
+            onChange={(e) => setAiSearchDescription(e.target.value)}
+            rows={4}
+            style={{
+              padding: "0.8rem 1rem",
+              borderRadius: "8px",
+              border: "2px solid #cbb994",
+              fontSize: "1rem",
+              fontFamily: "inherit",
+              resize: "vertical",
+            }}
+            required
+          />
+          <button
+            type="submit"
+            disabled={aiLoading}
+            style={{
+              backgroundColor: "#8c6f2c", // Different color for distinction
+              color: "#f0e9e0",
+              padding: "0.8rem 2rem",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "700",
+              fontSize: "1.1rem",
+              transition: "background-color 0.3s",
+              alignSelf: "center",
+            }}
+          >
+            {aiLoading ? "AI Searching..." : "Search with AI"}
+          </button>
+          {aiError && <p style={{ color: "red", textAlign: "center" }}>Error: {aiError}</p>}
+        </form>
+      </section>
+
+      {/* AI Search Results Display */}
+      {/* This condition ensures the section is shown if there's an active search attempt, loading, or results/error */}
+      {(aiSearchDescription || aiLoading || aiSearchResults.length > 0 || aiError) && (
+        <section style={{ marginTop: "2rem" }}>
+          <h2 style={{ textAlign: "center", marginBottom: "1.5rem", color: "#3c2f2f" }}>AI Recommendations</h2>
+          {aiLoading && <p style={{ textAlign: "center", fontStyle: "italic", marginTop: "1rem" }}>AI is thinking...</p>}
+          {aiError && !aiLoading && <p style={{ color: "red", textAlign: "center", marginTop: "1rem" }}>Error: {aiError}</p>}
+          {!aiLoading && !aiError && aiSearchResults.length === 0 && aiSearchDescription && (
+            <p style={{ textAlign: "center", color: "#7a6f6f", fontStyle: "italic", marginTop: "1rem" }}>
+              AI couldn't find specific matches for your description. Try rephrasing or being more general.
+            </p>
+          )}
+          {aiSearchResults.length > 0 && (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))",
+                gap: "1.8rem",
+              }}
+            >
+              {aiSearchResults.map((perfume) => (
+                <div
+                  key={perfume.id} // Assuming perfume items have an id
+                  style={{
+                    backgroundColor: "#fff",
+                    borderRadius: "12px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    padding: "1rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    transition: "transform 0.3s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "scale(1.03)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "scale(1)";
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontFamily: "'Playfair Display', serif",
+                      fontWeight: "700",
+                      fontSize: "1.3rem",
+                      marginBottom: "0.4rem",
+                      color: "#3c2f2f",
+                    }}
+                    title={perfume.title}
+                  >
+                    {perfume.title}
+                  </h3>
+                  <p
+                    style={{
+                      fontStyle: "italic",
+                      fontSize: "0.9rem",
+                      color: "#7a6f6f",
+                      marginBottom: "0.8rem",
+                      maxHeight: "4.5em", // Limit height for description
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3, // Max 3 lines
+                      WebkitBoxOrient: "vertical",
+                    }}
+                    title={perfume.description}
+                  >
+                    {perfume.description || "No description available."}
+                  </p>
+                  {/* Display other relevant perfume details if available */}
+                  {perfume.brand && <p style={{ fontWeight: "600", marginBottom: "0.2rem" }}>Brand: <span style={{ color: "#b29160", fontWeight: "700" }}>{perfume.brand}</span></p>}
+                  {/* Add a buy link or other actions if applicable for 'perfumes' collection items */}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {equivalencias.length > 0 && (
         <div
