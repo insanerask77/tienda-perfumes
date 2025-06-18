@@ -90,27 +90,27 @@ app.post("/api/perfumes/ai-search", async (req, res) => {
   }
 
   const prompt = `
-You are a perfume recommendation expert.
-A user is looking for a perfume and has provided the following description:
+Eres un experto en recomendaciones de perfumes.
+Un usuario está buscando un perfume y ha proporcionado la siguiente descripción:
 \"${description}\"
 
-Analyze this description and extract key characteristics, scent notes, desired mood, perfume styles, or any other relevant attributes.
-Return your analysis as a JSON object with the following possible keys (include only relevant keys):
-- \"keywords\": ["array", "of", "strings"] (e.g., specific scents like vanilla, rose, oud, citrus)
-- \"scent_family\": "string" (e.g., Floral, Oriental, Woody, Fresh, Gourmand, Chypre, Fougere)
-- \"mood_or_occasion\": "string" (e.g., \"evening wear\", \"daily use\", \"romantic\", \"energetic\")
-- \"primary_notes\": ["array", "of", "strings"] (dominant notes if identifiable)
-- \"secondary_notes\": ["array", "of", "strings"] (supporting notes if identifiable)
+Analiza esta descripción y extrae las características clave, notas olfativas, estado de ánimo deseado, estilos de perfume u otros atributos relevantes.
+Devuelve tu análisis como un objeto JSON con las siguientes claves posibles (incluye solo las claves relevantes):
+- \"keywords\": ["array", "de", "cadenas"] (por ejemplo, aromas específicos como vainilla, rosa, oud, cítrico)
+- \"scent_family\": "cadena" (por ejemplo, Floral, Oriental, Amaderado, Fresco, Gourmand, Chipre, Fougère)
+- \"mood_or_occasion\": "cadena" (por ejemplo, \"uso nocturno\", \"uso diario\", \"romántico\", \"enérgico\")
+- \"primary_notes\": ["array", "de", "cadenas"] (notas dominantes si son identificables)
+- \"secondary_notes\": ["array", "de", "cadenas"] (notas secundarias si son identificables)
 
-Example of desired JSON output:
+Ejemplo del resultado JSON deseado:
 {
-  \"keywords\": [\"vanilla\", \"tobacco\", \"spicy\"],
+  \"keywords\": [\"vainilla\", \"tabaco\", \"especiado\"],
   \"scent_family\": \"Oriental\",
-  \"mood_or_occasion\": \"evening wear\"
+  \"mood_or_occasion\": \"uso nocturno\"
 }
 
-Provide only the JSON object in your response.
-  `;
+Proporciona únicamente el objeto JSON en tu respuesta.
+`;
 
   try {
     console.log("Sending request to OpenAI GPT-4o for AI search...");

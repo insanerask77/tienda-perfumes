@@ -8,10 +8,25 @@ HEADERS = {"Content-Type": "application/json"}
 
 # Lista de búsquedas populares
 BUSQUEDAS_POPULARES = [
-    "Le Male Elixir", "Dior Sauvage", "Bleu de Chanel", "Acqua di Gio", "Creed Aventus",
-    "1 Million", "La Vie Est Belle", "Black Opium", "Armani Code", "Good Girl",
-    "Invictus", "Alien", "L'interdit", "Light Blue", "Eros", "Angel", "YSL Libre",
-    "Tom Ford Noir", "Gucci Bloom", "Boss Bottled"
+    "Le Male", "Sauvage", "Bleu de Chanel", "Acqua di Gio", "1 Million",
+    "Invictus", "Eros", "Light Blue", "La Vie Est Belle", "Good Girl",
+    "Baccarat Rouge", "Angel", "Alien", "Armani Code", "Boss Bottled",
+    "Luna Rossa", "Spicebomb", "Fahrenheit", "CK One", "The One",
+    "Black Opium", "Pure XS", "My Way", "Libre", "Scandal",
+    "Dior Homme", "L'Homme", "L'Interdit", "Idôle", "YSL Y",
+    "Omnia", "212", "Very Good Girl", "Versace Pour Homme", "Terre d'Hermès",
+    "J'adore", "Hypnotic Poison", "Narciso Rodriguez", "Euphoria", "Flowerbomb",
+    "Gucci Bloom", "Gucci Guilty", "Tom Ford Noir", "Allure Homme", "Kenzo Homme",
+    "Noa", "Chloé", "Olympéa", "Lempicka", "Aventus",
+    "The Scent", "Wanted", "Toy Boy", "K by Dolce&Gabbana", "212 VIP",
+    "Lady Million", "Mon Guerlain", "Boss Alive", "L.12.12", "Amor Amor",
+    "Armani Si", "Nomade", "Pure XS For Her", "Yes I Am", "Delina",
+    "Jo Malone", "Bois d'Argent", "Oud Wood", "Hugo", "Eau Fraîche",
+    "Cool Water", "Daisy", "Light Blue Intense", "Rose Prick", "Black Orchid",
+    "L'Homme Ideal", "Libre Intense", "Versace Dylan Blue", "Toy 2", "Luna",
+    "212 Sexy", "Code Absolu", "Y Live", "Elie Saab", "Azzaro Wanted Girl",
+    "CK Be", "Valentina", "Velvet Orchid", "Idôle Aura", "Eros Flame",
+    "Jean Paul Gaultier Classique", "Givenchy Gentleman", "The Only One", "La Nuit Trésor", "Olympéa Legend"
 ]
 
 def crear_perfume(data_perfume):
