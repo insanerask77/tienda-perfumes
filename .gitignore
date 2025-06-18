@@ -1,0 +1,8 @@
+# ignore directory with PocketBase data
+db/data/
+/db/data
+./db/data
+.vscode/
+
+# ignore Python cache
+__pycache__/    
