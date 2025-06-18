@@ -8,23 +8,55 @@ HEADERS = {"Content-Type": "application/json"}
 
 # Lista de búsquedas populares
 BUSQUEDAS_POPULARES = [
-    "Le Male Elixir", "Dior Sauvage", "Bleu de Chanel", "Acqua di Gio", "Creed Aventus",
-    "1 Million", "La Vie Est Belle", "Black Opium", "Armani Code", "Good Girl",
-    "Invictus", "Alien", "L'interdit", "Light Blue", "Eros", "Angel", "YSL Libre",
-    "Tom Ford Noir", "Gucci Bloom", "Boss Bottled"
+    "Le Male", "Sauvage", "Bleu de Chanel", "Acqua di Gio", "1 Million",
+    "Invictus", "Eros", "Light Blue", "La Vie Est Belle", "Good Girl",
+    "Baccarat Rouge", "Angel", "Alien", "Armani Code", "Boss Bottled",
+    "Luna Rossa", "Spicebomb", "Fahrenheit", "CK One", "The One",
+    "Black Opium", "Pure XS", "My Way", "Libre", "Scandal",
+    "Dior Homme", "L'Homme", "L'Interdit", "Idôle", "YSL Y",
+    "Omnia", "212", "Very Good Girl", "Versace Pour Homme", "Terre d'Hermès",
+    "J'adore", "Hypnotic Poison", "Narciso Rodriguez", "Euphoria", "Flowerbomb",
+    "Gucci Bloom", "Gucci Guilty", "Tom Ford Noir", "Allure Homme", "Kenzo Homme",
+    "Noa", "Chloé", "Olympéa", "Lempicka", "Aventus",
+    "The Scent", "Wanted", "Toy Boy", "K by Dolce&Gabbana", "212 VIP",
+    "Lady Million", "Mon Guerlain", "Boss Alive", "L.12.12", "Amor Amor",
+    "Armani Si", "Nomade", "Pure XS For Her", "Yes I Am", "Delina",
+    "Jo Malone", "Bois d'Argent", "Oud Wood", "Hugo", "Eau Fraîche",
+    "Cool Water", "Daisy", "Light Blue Intense", "Rose Prick", "Black Orchid",
+    "L'Homme Ideal", "Libre Intense", "Versace Dylan Blue", "Toy 2", "Luna",
+    "212 Sexy", "Code Absolu", "Y Live", "Elie Saab", "Azzaro Wanted Girl",
+    "CK Be", "Valentina", "Velvet Orchid", "Idôle Aura", "Eros Flame",
+    "Jean Paul Gaultier Classique", "Givenchy Gentleman", "The Only One", "La Nuit Trésor", "Olympéa Legend"
 ]
 
+def perfume_existe(title):
+    if not title:
+        return False
+    safe_title = title.replace("'", "\\'")
+    url = f"{PB_URL}/collections/perfumes/records?filter=title='{safe_title}'"
+    r = requests.get(url, headers=HEADERS)
+    if r.status_code == 200:
+        data = r.json()
+        return len(data.get("items", [])) > 0
+    return False
+
 def crear_perfume(data_perfume):
+    if not data_perfume.get('title'):
+        print("[!] Título vacío. Se omite registro.")
+        return None
+
+    if perfume_existe(data_perfume['title']):
+        print(f"[!] Ya existe perfume: {data_perfume['title']}")
+        return None
+
     url = f"{PB_URL}/collections/perfumes/records"
     try:
         r = requests.post(url, json=data_perfume, headers=HEADERS)
         r.raise_for_status()
         return r.json()
     except requests.HTTPError as e:
-        if r.status_code == 400:
-            print(f"[!] Posible duplicado: {data_perfume['title']}")
-            return None
-        raise e
+        print(f"[x] Error creando perfume: {e.response.text}")
+        return None
 
 def crear_equivalencia(data_equivalencia):
     url = f"{PB_URL}/collections/equivalencias/records"
@@ -49,13 +81,27 @@ def extraer_thumbnail_from_html(thumb_html):
     img = soup.find("img")
     return img.get("src") if img else None
 
+def obtener_descripcion_completa(url_perfume):
+    try:
+        r = requests.get(url_perfume)
+        r.raise_for_status()
+        soup = BeautifulSoup(r.text, "html.parser")
+        desc_tag = soup.select_one(".woocommerce-product-details__short-description")
+        return desc_tag.get_text(strip=True) if desc_tag else ""
+    except:
+        return ""
+
 def scrapear_equivalencias(url_perfume):
     if not url_perfume:
         print("[!] URL de perfume inválida")
         return []
+
     r = requests.get(url_perfume)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, "html.parser")
+
+    notas_ul = soup.select_one("#tab-description > ul")
+    descripcion_completa = str(notas_ul) if notas_ul else ""
 
     equivalencias = []
     genero = ""
@@ -66,7 +112,6 @@ def scrapear_equivalencias(url_perfume):
     for card in soup.select("div.theme-card"):
         tienda = card.select_one(".retailer-name span[itemprop='brand']")
         titulo = card.select_one(".retailer-product-name span[itemprop='name']")
-        desc = card.select_one("meta[itemprop='description']")
         precio_low = card.select_one("meta[itemprop='lowPrice']")
         precio_high = card.select_one("meta[itemprop='highPrice']")
         enlace = card.select_one(".card-button-container a")
@@ -78,7 +123,7 @@ def scrapear_equivalencias(url_perfume):
             "title": titulo.get_text(strip=True),
             "store": tienda.get_text(strip=True) if tienda else "",
             "price": f"{precio_low['content']} € – {precio_high['content']} €" if precio_low and precio_high else "",
-            "description": desc["content"] if desc and desc.has_attr("content") else "",
+            "description": descripcion_completa,
             "gender": genero,
             "buy_link": enlace["href"] if enlace and enlace.has_attr("href") else ""
         })
@@ -96,9 +141,11 @@ def main():
             thumb_html = item.get("thumb_html")
             thumbnail_url = extraer_thumbnail_from_html(thumb_html)
 
+            descripcion_completa = obtener_descripcion_completa(url_perfume)
+
             perfume_data = {
                 "title": title,
-                "description": desc or "",
+                "description": descripcion_completa or desc or "",
                 "original_link": url_perfume or "",
                 "thumbnail": thumbnail_url or ""
             }
