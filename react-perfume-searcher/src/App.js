@@ -476,10 +476,24 @@ function App() {
                 marginBottom: "0.4rem",
                 color: "#3c2f2f",
               }}
-              title={eq.title}
+              title={eq.perfume_id || "Nombre no disponible"} // Use perfume_id for the tooltip as well
             >
-              {eq.title}
+              {eq.perfume_id || "Nombre no disponible"}
             </h3>
+            {/* Subtitle for eq.title */}
+            <h4
+              style={{
+                fontFamily: "\'Playfair Display\', serif",
+                fontWeight: "600", // Slightly less prominent than title
+                fontSize: "1.1rem", // Smaller than title
+                color: "#5c4f4f", // Slightly different color
+                marginBottom: "0.3rem",
+                marginTop: "-0.2rem", // Adjust spacing if needed
+              }}
+              title={eq.title || "Título no disponible"}
+            >
+              {eq.title || "Título no disponible"}
+            </h4>
             <p
               style={{
                 fontStyle: "italic",
@@ -490,7 +504,7 @@ function App() {
               }}
               // Removed title prop
             >
-              <span dangerouslySetInnerHTML={{ __html: eq.description }} />
+              <span dangerouslySetInnerHTML={{ __html: eq.description || "Descripción no disponible." }} />
             </p>
             <p
               style={{
