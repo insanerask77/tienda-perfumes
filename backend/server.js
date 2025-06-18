@@ -28,7 +28,7 @@ app.get("/api/perfumes", async (req, res) => {
   console.log(`LOG: Received perfume search request for: "${decodedSearchText}"`);
 
   // Step 1: Direct search in 'equivalencias'
-  const equivalenciaDirectSearchFields = ["title", "description"]; // Add other relevant fields if needed
+  const equivalenciaDirectSearchFields = ["perfume_id","title", "description"]; // Add other relevant fields if needed
   const equivalenciaDirectFilterParts = equivalenciaDirectSearchFields.map(field => `${field}~"${decodedSearchText}"`);
   const equivalenciaDirectFilter = `(${equivalenciaDirectFilterParts.join(" || ")})`;
   const equivalenciasDirectUrl = `${PB_URL}/collections/equivalencias/records?filter=${encodeURIComponent(equivalenciaDirectFilter)}&perPage=100`; // Adjust perPage as needed
@@ -54,7 +54,7 @@ app.get("/api/perfumes", async (req, res) => {
   }
 
   // Step 2: Search in 'perfumes' collection broadly (Original Step 1)
-  const perfumeSearchFields = ["title", "description", "brand"];
+  const perfumeSearchFields = ["perfume_id","title", "description", "brand"];
   const perfumeFilterParts = perfumeSearchFields.map(field => `${field}~\"${decodedSearchText}\"`);
   const perfumeSearchFilter = `(${perfumeFilterParts.join(" || ")})`; // Renamed perfumeFilter to perfumeSearchFilter
   const perfumesUrl = `${PB_URL}/collections/perfumes/records?filter=${encodeURIComponent(perfumeSearchFilter)}&perPage=100`;
@@ -262,7 +262,7 @@ Proporciona únicamente el objeto JSON en tu respuesta. Asegúrate de que la res
           structuredAiResponse.other_characteristics.forEach(char => { if (char && char.trim() !== "") allSearchTerms.push(char.trim()); });
       }
 
-      const searchFields = ["title", "description"]; // Fields in 'perfumes' to search against
+      const searchFields = ["perfume_id","title", "description"]; // Fields in 'perfumes' to search against
       let pbFilter = "";
       let aiMatchedPerfumes = [];
       let finalEquivalencias = [];
