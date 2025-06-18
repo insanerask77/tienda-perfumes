@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 
-const PB_URL = "http://localhost:8080/api";
+const BACKEND_API_URL = "http://localhost:3001/api"; // URL for the new backend
 
 function App() {
   const [busqueda, setBusqueda] = useState("");
-  const [perfumes, setPerfumes] = useState([]);
+  // perfumes state is not directly used for display, so it might be removable if not needed elsewhere
+  // const [perfumes, setPerfumes] = useState([]);
   const [equivalencias, setEquivalencias] = useState([]);
   const [filtroTienda, setFiltroTienda] = useState("");
   const [filtroGenero, setFiltroGenero] = useState("");
@@ -12,33 +13,37 @@ function App() {
   const [generosDisponibles, setGenerosDisponibles] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Busca perfumes en PocketBase
+  // Busca perfumes en el NUEVO BACKEND
   async function buscarPerfumes(texto) {
-    const filtro = `title~"${texto}"`;
     const resp = await fetch(
-      `${PB_URL}/collections/perfumes/records?filter=${encodeURIComponent(
-        filtro
-      )}&perPage=50`
+      `${BACKEND_API_URL}/perfumes?searchText=${encodeURIComponent(texto)}`
     );
+    if (!resp.ok) {
+      console.error("Error fetching perfumes from backend:", resp.status, await resp.text());
+      return []; // Return empty array on error
+    }
     const data = await resp.json();
-    return data.items || [];
+    // Backend already returns items directly, or an empty array
+    return data;
   }
 
-  // Busca equivalencias relacionadas con los perfumes
+  // Busca equivalencias relacionadas con los perfumes en el NUEVO BACKEND
   async function buscarEquivalencias(idsPerfumes) {
     if (idsPerfumes.length === 0) return [];
 
-    const filtros = idsPerfumes.map((id) => `perfume_id="${id}"`).join("||");
     const resp = await fetch(
-      `${PB_URL}/collections/equivalencias/records?filter=${encodeURIComponent(
-        filtros
-      )}&perPage=100`
+      `${BACKEND_API_URL}/equivalencias?perfumeIds=${encodeURIComponent(idsPerfumes.join(","))}`
     );
+    if (!resp.ok) {
+      console.error("Error fetching equivalencias from backend:", resp.status, await resp.text());
+      return []; // Return empty array on error
+    }
     const data = await resp.json();
-    return data.items || [];
+    // Backend already returns items directly, or an empty array
+    return data;
   }
 
-  // Extrae tiendas y géneros únicos para los filtros
+  // Extrae tiendas y géneros únicos para los filtros (no changes needed here)
   function extraerFiltros(equivalencias) {
     const tiendas = Array.from(
       new Set(equivalencias.map((eq) => eq.store).filter(Boolean))
@@ -50,7 +55,7 @@ function App() {
     setGenerosDisponibles(generos);
   }
 
-  // Maneja el submit de búsqueda
+  // Maneja el submit de búsqueda (no changes needed in the core logic here)
   async function handleBuscar(e) {
     e.preventDefault();
     setLoading(true);
@@ -60,25 +65,29 @@ function App() {
 
     try {
       const perfumesEncontrados = await buscarPerfumes(busqueda);
+      // perfumesEncontrados should be the array of perfume objects from the backend
       const idsPerfumes = perfumesEncontrados.map((p) => p.id);
 
       if (idsPerfumes.length === 0) {
+        // setPerfumes([]); // Clear perfumes if you were storing them
         setEquivalencias([]);
         setLoading(false);
         return;
       }
+      // setPerfumes(perfumesEncontrados); // If you still want to store the raw perfume list
 
       const equivalenciasEncontradas = await buscarEquivalencias(idsPerfumes);
       setEquivalencias(equivalenciasEncontradas);
       extraerFiltros(equivalenciasEncontradas);
     } catch (error) {
       console.error("Error en búsqueda:", error);
+      // Consider setting an error state here to display to the user
     } finally {
       setLoading(false);
     }
   }
 
-  // Filtrado local por tienda y género
+  // Filtrado local por tienda y género (no changes needed here)
   const equivalenciasFiltradas = equivalencias.filter((eq) => {
     const tiendaOk = filtroTienda ? eq.store === filtroTienda : true;
     const generoOk = filtroGenero ? eq.gender === filtroGenero : true;
@@ -89,7 +98,7 @@ function App() {
     <div
       style={{
         fontFamily:
-          "'Playfair Display', serif, 'Times New Roman', Times, serif",
+          "\'Playfair Display\', serif, \'Times New Roman\', Times, serif", // Escaped single quotes
         background:
           "linear-gradient(135deg, #f0e9e0 0%, #e4d7c3 100%)",
         minHeight: "100vh",
@@ -265,7 +274,7 @@ function App() {
           >
             <h3
               style={{
-                fontFamily: "'Playfair Display', serif",
+                fontFamily: "\'Playfair Display\', serif", // Escaped single quotes
                 fontWeight: "700",
                 fontSize: "1.3rem",
                 marginBottom: "0.4rem",
