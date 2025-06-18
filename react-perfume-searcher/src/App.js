@@ -23,7 +23,7 @@ function App() {
   async function handleAiSearch(e) {
     e.preventDefault();
     if (!aiSearchDescription.trim()) {
-      setAiError("Please enter a description for the AI search.");
+      setAiError("Por favor, ingresa una descripción para la búsqueda con IA.");
       return;
     }
     setAiLoading(true);
@@ -40,8 +40,8 @@ function App() {
       });
 
       if (!resp.ok) {
-        const errorData = await resp.json().catch(() => ({ error: `AI search failed with status: ${resp.status}` }));
-        throw new Error(errorData.error || `AI search failed with status: ${resp.status}`);
+        const errorData = await resp.json().catch(() => ({ error: `La búsqueda con IA falló con estado: ${resp.status}` }));
+        throw new Error(errorData.error || `La búsqueda con IA falló con estado: ${resp.status}`);
       }
 
       const data = await resp.json();
@@ -50,7 +50,7 @@ function App() {
 
     } catch (error) {
       console.error("Error in AI search:", error);
-      setAiError(error.message || "An unexpected error occurred during AI search.");
+      setAiError(error.message || "Ocurrió un error inesperado durante la búsqueda con IA.");
     } finally {
       setAiLoading(false);
     }
@@ -98,7 +98,7 @@ function App() {
     setGenerosDisponibles(generos);
   }
 
-  // Maneja el submit de búsqueda (no changes needed in the core logic here)
+  // Maneja el submit de búsqueda
   async function handleBuscar(e) {
     e.preventDefault();
     setLoading(true);
@@ -107,23 +107,24 @@ function App() {
     setGenerosDisponibles([]);
 
     try {
-      const perfumesEncontrados = await buscarPerfumes(busqueda);
-      // perfumesEncontrados should be the array of perfume objects from the backend
-      const idsPerfumes = perfumesEncontrados.map((p) => p.id);
+      // buscarPerfumes now directly returns the list of equivalencias
+      const equivalenciasEncontradas = await buscarPerfumes(busqueda);
 
-      if (idsPerfumes.length === 0) {
-        // setPerfumes([]); // Clear perfumes if you were storing them
-        setEquivalencias([]);
-        setLoading(false);
-        return;
-      }
-      // setPerfumes(perfumesEncontrados); // If you still want to store the raw perfume list
+      // Ensure equivalenciasEncontradas is an array before processing
+      const results = Array.isArray(equivalenciasEncontradas) ? equivalenciasEncontradas : [];
 
-      const equivalenciasEncontradas = await buscarEquivalencias(idsPerfumes);
-      setEquivalencias(equivalenciasEncontradas);
-      extraerFiltros(equivalenciasEncontradas);
+      setEquivalencias(results);
+      extraerFiltros(results);
+
+      // No explicit check for results.length === 0 needed here before setting state,
+      // as an empty array will correctly clear previous results and filters.
+      // The rendering logic will handle displaying "No se encontraron equivalencias."
+
     } catch (error) {
       console.error("Error en búsqueda:", error);
+      setEquivalencias([]); // Clear equivalencias on error
+      setTiendasDisponibles([]); // Clear filters on error too
+      setGenerosDisponibles([]);
       // Consider setting an error state here to display to the user
     } finally {
       setLoading(false);
@@ -206,10 +207,10 @@ function App() {
 
       {/* AI Search Section */}
       <section style={{ marginTop: "2rem", marginBottom: "2rem", padding: "1.5rem", backgroundColor: "#e8e0d6", borderRadius: "12px" }}>
-        <h2 style={{ textAlign: "center", marginBottom: "1rem", color: "#3c2f2f" }}>Describe Your Ideal Perfume</h2>
+        <h2 style={{ textAlign: "center", marginBottom: "1rem", color: "#3c2f2f" }}>Describe Tu Perfume Ideal</h2>
         <form onSubmit={handleAiSearch} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <textarea
-            placeholder="e.g., I'm looking for a warm, spicy fragrance with vanilla notes, suitable for evening wear."
+            placeholder="Ej: Busco una fragancia cálida y especiada con notas de vainilla, ideal para la noche."
             value={aiSearchDescription}
             onChange={(e) => setAiSearchDescription(e.target.value)}
             rows={4}
@@ -239,7 +240,7 @@ function App() {
               alignSelf: "center",
             }}
           >
-            {aiLoading ? "AI Searching..." : "Search with AI"}
+            {aiLoading ? "Buscando con IA..." : "Buscar con IA"}
           </button>
           {aiError && <p style={{ color: "red", textAlign: "center" }}>Error: {aiError}</p>}
         </form>
@@ -249,12 +250,12 @@ function App() {
       {/* This condition ensures the section is shown if there's an active search attempt, loading, or results/error */}
       {(aiSearchDescription || aiLoading || aiSearchResults.length > 0 || aiError) && (
         <section style={{ marginTop: "2rem" }}>
-          <h2 style={{ textAlign: "center", marginBottom: "1.5rem", color: "#3c2f2f" }}>AI Recommendations</h2>
-          {aiLoading && <p style={{ textAlign: "center", fontStyle: "italic", marginTop: "1rem" }}>AI is thinking...</p>}
+          <h2 style={{ textAlign: "center", marginBottom: "1.5rem", color: "#3c2f2f" }}>Recomendaciones de IA</h2>
+          {aiLoading && <p style={{ textAlign: "center", fontStyle: "italic", marginTop: "1rem" }}>IA está pensando...</p>}
           {aiError && !aiLoading && <p style={{ color: "red", textAlign: "center", marginTop: "1rem" }}>Error: {aiError}</p>}
           {!aiLoading && !aiError && aiSearchResults.length === 0 && aiSearchDescription && (
             <p style={{ textAlign: "center", color: "#7a6f6f", fontStyle: "italic", marginTop: "1rem" }}>
-              AI couldn't find specific matches for your description. Try rephrasing or being more general.
+              La IA no encontró coincidencias específicas para tu descripción. Intenta reformular o ser más general.
             </p>
           )}
           {aiSearchResults.length > 0 && (
@@ -312,7 +313,7 @@ function App() {
                     }}
                     title={perfume.description}
                   >
-                    {perfume.description || "No description available."}
+                    {perfume.description || "Descripción no disponible."}
                   </p>
                   {/* Display other relevant perfume details if available */}
                   {perfume.brand && <p style={{ fontWeight: "600", marginBottom: "0.2rem" }}>Brand: <span style={{ color: "#b29160", fontWeight: "700" }}>{perfume.brand}</span></p>}

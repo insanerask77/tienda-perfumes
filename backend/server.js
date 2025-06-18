@@ -17,31 +17,100 @@ app.get("/", (req, res) => {
   res.send("Backend server is running!");
 });
 
-// Endpoint for perfume search
+// Endpoint for perfume search (now returns equivalencias based on perfume properties)
 app.get("/api/perfumes", async (req, res) => {
   const { searchText } = req.query;
 
   if (!searchText) {
     return res.status(400).json({ error: "searchText query parameter is required" });
   }
+  const decodedSearchText = decodeURIComponent(searchText);
+  console.log(`Received perfume search request for: "${decodedSearchText}"`);
 
-  const filter = `title~"${searchText}"`;
-  const url = `${PB_URL}/collections/perfumes/records?filter=${encodeURIComponent(filter)}&perPage=50`;
+  // Step 1: Search in 'perfumes' collection broadly
+  // Assuming 'brand' field exists in your 'perfumes' collection
+  const perfumeSearchFields = ["title", "description", "brand"];
+  const perfumeFilterParts = perfumeSearchFields.map(field => `${field}~\"${decodedSearchText}\"`);
+  const perfumeFilter = `(${perfumeFilterParts.join(" || ")})`;
+  // Fetch more perfumes initially to increase chances of finding linked equivalencias
+  const perfumesUrl = `${PB_URL}/collections/perfumes/records?filter=${encodeURIComponent(perfumeFilter)}&perPage=100`;
 
+  console.log(`Searching 'perfumes' collection with filter: ${perfumeFilter}`);
+  console.log(`Perfumes collection URL: ${perfumesUrl}`);
+
+  let matchedPerfumes = [];
   try {
-    console.log(`Fetching from PocketBase: ${url}`);
-    const response = await fetch(url);
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error(`PocketBase request failed with status ${response.status}: ${errorBody}`);
-      throw new Error(`PocketBase request failed with status ${response.status}`);
+    const perfumeResp = await fetch(perfumesUrl);
+    if (!perfumeResp.ok) {
+      const errorBody = await perfumeResp.text();
+      console.error(`Perfumes collection request failed with status ${perfumeResp.status}: ${errorBody}`);
+      // Do not throw here, allow to return empty if this step fails but not catastrophically
+      return res.status(perfumeResp.status).json({ error: `Failed to fetch perfumes from PocketBase: ${errorBody}`});
     }
-    const data = await response.json();
-    res.json(data.items || []);
+    const perfumeData = await perfumeResp.json();
+    matchedPerfumes = perfumeData.items || [];
+    console.log(`Found ${matchedPerfumes.length} perfumes matching initial criteria.`);
   } catch (error) {
-    console.error("Error fetching perfumes:", error);
-    res.status(500).json({ error: "Failed to fetch perfumes", details: error.message });
+    console.error("Error fetching data from 'perfumes' collection:", error);
+    return res.status(500).json({ error: "Server error while fetching perfumes.", details: error.message });
   }
+
+  if (matchedPerfumes.length === 0) {
+    console.log("No perfumes found matching the initial criteria. Returning empty list.");
+    return res.json([]); // Return empty array of equivalencias
+  }
+
+  const perfumeIds = matchedPerfumes.map(p => p.id);
+  if (perfumeIds.length === 0) { // Should not happen if matchedPerfumes.length > 0, but good check
+      console.log("No perfume IDs extracted. Returning empty list.");
+      return res.json([]);
+  }
+  console.log(`Extracted ${perfumeIds.length} perfume IDs for fetching equivalencias.`);
+
+  // Step 2: Fetch equivalencias linked to these perfume IDs
+  const equivalenciaIdFilterParts = perfumeIds.map(id => `perfume_id="${id}"`);
+  const equivalenciaIdFilter = `(${equivalenciaIdFilterParts.join(" || ")})`;
+  // Consider pagination or increasing perPage if many equivalencias are expected.
+  // Sorting by title for consistent results.
+  const equivalenciasUrl = `${PB_URL}/collections/equivalencias/records?filter=${encodeURIComponent(equivalenciaIdFilter)}&perPage=200&sort=title`;
+
+  console.log(`Fetching 'equivalencias' collection with filter: ${equivalenciaIdFilter}`);
+  console.log(`Equivalencias collection URL: ${equivalenciasUrl}`);
+
+  let allEquivalencias = [];
+  try {
+    const equivalenciaResp = await fetch(equivalenciasUrl);
+    if (!equivalenciaResp.ok) {
+      const errorBody = await equivalenciaResp.text();
+      console.error(`Equivalencias collection request failed with status ${equivalenciaResp.status}: ${errorBody}`);
+      // Depending on desired behavior, you might return an error or an empty list.
+      // For now, returning an error status.
+      return res.status(equivalenciaResp.status).json({ error: `Failed to fetch equivalencias from PocketBase: ${errorBody}`});
+    }
+    const equivalenciaData = await equivalenciaResp.json();
+    allEquivalencias = equivalenciaData.items || [];
+    console.log(`Fetched ${allEquivalencias.length} total equivalencias linked to the perfumes.`);
+  } catch (error) {
+    console.error("Error fetching data from 'equivalencias' collection:", error);
+    return res.status(500).json({ error: "Server error while fetching equivalencias.", details: error.message });
+  }
+
+  // Step 3: Refine equivalencias by searchText on their own fields (title, description)
+  let refinedEquivalencias = [];
+  if (allEquivalencias.length > 0) {
+    console.log(`Refining ${allEquivalencias.length} equivalencias with searchText: "${decodedSearchText}"`);
+    const stLower = decodedSearchText.toLowerCase();
+    refinedEquivalencias = allEquivalencias.filter(eq =>
+      (eq.title && eq.title.toLowerCase().includes(stLower)) ||
+      (eq.description && eq.description.toLowerCase().includes(stLower))
+      // Add other eq fields for refinement if needed, e.g. eq.brand
+    );
+    console.log(`Found ${refinedEquivalencias.length} equivalencias after refinement.`);
+  } else {
+    console.log("No equivalencias to refine.");
+  }
+
+  res.json(refinedEquivalencias);
 });
 
 // Endpoint for equivalencias
@@ -90,27 +159,25 @@ app.post("/api/perfumes/ai-search", async (req, res) => {
   }
 
   const prompt = `
-Eres un experto en recomendaciones de perfumes.
-Un usuario está buscando un perfume y ha proporcionado la siguiente descripción:
+Eres un experto en recomendación de perfumes.
+Un usuario está buscando un perfume y ha proporcionado la siguiente descripción en español:
 \"${description}\"
-
-Analiza esta descripción y extrae las características clave, notas olfativas, estado de ánimo deseado, estilos de perfume u otros atributos relevantes.
-Devuelve tu análisis como un objeto JSON con las siguientes claves posibles (incluye solo las claves relevantes):
-- \"keywords\": ["array", "de", "cadenas"] (por ejemplo, aromas específicos como vainilla, rosa, oud, cítrico)
-- \"scent_family\": "cadena" (por ejemplo, Floral, Oriental, Amaderado, Fresco, Gourmand, Chipre, Fougère)
-- \"mood_or_occasion\": "cadena" (por ejemplo, \"uso nocturno\", \"uso diario\", \"romántico\", \"enérgico\")
+Analiza esta descripción y extrae características clave, notas olfativas, ambiente deseado, estilos de perfume o cualquier otro atributo relevante. Los términos extraídos deben estar en español.
+Devuelve tu análisis como un objeto JSON con las siguientes posibles claves (incluye solo las claves relevantes, los valores deben estar en español):
+- \"keywords\": ["array", "de", "cadenas"] (ej., aromas específicos como \"vainilla\", \"rosa\", \"oud\", \"cítrico\")
+- \"scent_family\": "cadena" (ej., \"Floral\", \"Oriental\", \"Amaderado\", \"Fresco\", \"Gourmand\", \"Chipre\", \"Fougère\")
+- \"mood_or_occasion\": "cadena" (ej., \"noche\", \"uso diario\", \"romántico\", \"energético\")
 - \"primary_notes\": ["array", "de", "cadenas"] (notas dominantes si son identificables)
-- \"secondary_notes\": ["array", "de", "cadenas"] (notas secundarias si son identificables)
+- \"secondary_notes\": ["array", "de", "cadenas"] (notas de apoyo si son identificables)
 
-Ejemplo del resultado JSON deseado:
+Ejemplo de la salida JSON deseada (los valores deben estar en español):
 {
   \"keywords\": [\"vainilla\", \"tabaco\", \"especiado\"],
   \"scent_family\": \"Oriental\",
-  \"mood_or_occasion\": \"uso nocturno\"
+  \"mood_or_occasion\": \"para la noche\"
 }
-
-Proporciona únicamente el objeto JSON en tu respuesta.
-`;
+Proporciona únicamente el objeto JSON en tu respuesta. Asegúrate de que la respuesta sea un JSON válido.
+  `;
 
   try {
     console.log("Sending request to OpenAI GPT-4o for AI search...");
@@ -131,32 +198,53 @@ Proporciona únicamente el objeto JSON en tu respuesta.
 
     try {
       const structuredAiResponse = JSON.parse(aiResponseContent);
-      // For now, just return the structured AI response.
-      // The next step will be to use this to query PocketBase.
-      // --- PocketBase Query Logic based on AI Analysis ---
-      let pbFilterParts = [];
-      const searchFields = ["title", "description"]; // Fields to search in PocketBase
+      console.log("Structured AI Response:", JSON.stringify(structuredAiResponse, null, 2));
 
+      const searchFields = ["title", "description"]; // Fields to search in PocketBase
+      let finalFilterParts = [];
+
+      // Handle Keywords (OR group)
       if (structuredAiResponse.keywords && structuredAiResponse.keywords.length > 0) {
+        let keywordFilterGroup = [];
         structuredAiResponse.keywords.forEach(keyword => {
-          if (keyword.trim() !== "") {
-            const keywordParts = searchFields.map(field => `${field}~\"${keyword.trim()}\"`);
-            pbFilterParts.push(`(${keywordParts.join(" || ")})`);
+          if (keyword && keyword.trim() !== "") {
+            const trimmedKeyword = keyword.trim();
+            const keywordFieldMatches = searchFields.map(field => `${field}~\"${trimmedKeyword}\"`);
+            keywordFilterGroup.push(`(${keywordFieldMatches.join(" || ")})`);
           }
         });
+        if (keywordFilterGroup.length > 0) {
+          finalFilterParts.push(`(${keywordFilterGroup.join(" || ")})`);
+        }
       }
 
-      // Example: Add scent_family to search if present (searching in description for now)
+      // Handle Scent Family (ANDed with other groups)
       if (structuredAiResponse.scent_family && structuredAiResponse.scent_family.trim() !== "") {
         const family = structuredAiResponse.scent_family.trim();
-        const familyParts = searchFields.map(field => `${field}~\"${family}\"`);
-        pbFilterParts.push(`(${familyParts.join(" || ")})`);
+        const familyFieldMatches = searchFields.map(field => `${field}~\"${family}\"`);
+        // Each field match for scent family is ORed, then the whole group is ANDed
+        if (familyFieldMatches.length > 0) {
+             finalFilterParts.push(`(${familyFieldMatches.join(" || ")})`);
+        }
+      }
+
+      // Handle Mood or Occasion (ANDed with other groups)
+      if (structuredAiResponse.mood_or_occasion && structuredAiResponse.mood_or_occasion.trim() !== "") {
+        const mood = structuredAiResponse.mood_or_occasion.trim();
+        const moodFieldMatches = searchFields.map(field => `${field}~\"${mood}\"`);
+        if (moodFieldMatches.length > 0) {
+            finalFilterParts.push(`(${moodFieldMatches.join(" || ")})`);
+        }
       }
 
       let perfumes = [];
-      if (pbFilterParts.length > 0) {
-        const pbFilter = pbFilterParts.join(" && ");
-        const pbCollection = "perfumes"; // Or "equivalencias" depending on what we are searching
+      let pbFilter = "";
+
+      if (finalFilterParts.length > 0) {
+        pbFilter = finalFilterParts.join(" && ");
+        console.log("Final PocketBase Filter to be used:", pbFilter);
+
+        const pbCollection = "perfumes";
         const url = `${PB_URL}/collections/${pbCollection}/records?filter=${encodeURIComponent(pbFilter)}&perPage=20`;
 
         console.log(`Querying PocketBase collection '${pbCollection}' with filter: ${pbFilter}`);
@@ -166,22 +254,26 @@ Proporciona únicamente el objeto JSON en tu respuesta.
           if (!pbResponse.ok) {
             const errorBody = await pbResponse.text();
             console.error(`PocketBase request failed with status ${pbResponse.status}: ${errorBody}`);
-            // Decide if to throw or return empty/error to client
-            // For now, continue and return potentially empty perfumes list along with AI analysis
           } else {
             const pbData = await pbResponse.json();
             perfumes = pbData.items || [];
+            console.log(`PocketBase query successful. Found ${perfumes.length} perfumes.`);
+            if (perfumes.length > 0) {
+                 console.log("First perfume item snippet:", JSON.stringify(perfumes[0], null, 2));
+            }
           }
         } catch (pbFetchError) {
           console.error("Error fetching data from PocketBase:", pbFetchError);
-          // Decide if to throw or return empty/error to client
         }
+      } else {
+        console.log("No filter parts generated from AI response. Skipping PocketBase query.");
       }
 
       res.json({
         userInput: description,
         aiAnalysis: structuredAiResponse,
-        matchedPerfumes: perfumes
+        matchedPerfumes: perfumes,
+        generatedFilter: pbFilter // Include filter in response for debugging
       });
     } catch (parseError) {
       console.error("Failed to parse AI JSON response:", parseError);
