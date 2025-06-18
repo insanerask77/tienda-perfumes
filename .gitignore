@@ -6,3 +6,5 @@ db/data/
 
 # ignore Python cache
 __pycache__/    
+
+.env
